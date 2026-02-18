@@ -1,5 +1,184 @@
-// 1. SEU BANCO DE DADOS DE PRODUTOS
-    const products = [
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grimório Shop | Black Clover</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0d0d0d;
+            --gold: #c5a059;
+            --dark-red: #8b0000;
+            --card-bg: #1a1a1a;
+            --text: #ffffff;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--text);
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(to bottom, #000, var(--black));
+            border-bottom: 2px solid var(--gold);
+        }
+
+        .logo {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: 4px;
+        }
+
+        /* Estrutura de Categorias */
+        .category-section {
+            margin: 40px 0;
+            padding-left: 5%;
+        }
+
+        .category-title {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--gold);
+            padding-left: 15px;
+        }
+
+        .horizontal-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 20px 0;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .horizontal-scroll::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+        .product-card {
+            min-width: 220px;
+            max-width: 220px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid #333;
+        }
+
+        .product-card:hover {
+            transform: scale(1.05);
+            border-color: var(--gold);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: contain;
+            background: #fff;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .product-info { padding: 15px; text-align: center; }
+        .product-name { font-weight: bold; font-size: 0.9rem; height: 40px; overflow: hidden; }
+
+        /* Estilo do Modal (Janela de Detalhes) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #f1f1f1; /* Cor clara estilo Amazon */
+            color: #111;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            position: relative;
+            padding: 30px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .close-modal {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .modal-left { flex: 1; min-width: 300px; text-align: center; }
+        .modal-left img { max-width: 100%; max-height: 400px; border-radius: 5px; }
+
+        .modal-right { flex: 1; min-width: 300px; padding: 0 20px; }
+        .modal-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; }
+        .modal-desc { font-size: 1rem; color: #444; margin-bottom: 20px; line-height: 1.5; }
+
+        .btn-amazon-modal {
+            background: #ffd814;
+            color: #000;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            display: inline-block;
+            border: 1px solid #fcd200;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        footer { text-align: center; padding: 50px; color: #666; font-size: 0.8rem; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">GRIMÓRIO SHOP</div>
+    <p>A loja definitiva para Cavaleiros Mágicos</p>
+</header>
+
+<div id="content-area">
+    <!-- As categorias e produtos serão gerados aqui pelo JS -->
+</div>
+
+<!-- Janela Modal -->
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-left">
+            <img id="modalImg" src="" alt="">
+        </div>
+        <div class="modal-right">
+            <div id="modalTitle" class="modal-title"></div>
+            <div id="modalDesc" class="modal-desc"></div>
+            <a id="modalLink" href="" target="_blank" class="btn-amazon-modal">VER PREÇO NA AMAZON</a>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>Como associado da Amazon, eu recebo por compras qualificadas.</p>
+</footer>
+
+<script>
+    // 1. SEU BANCO DE DADOS DE PRODUTOS
+    // Para criar categorias novas, basta mudar o texto em "category"
+const products = [
         {
             title: "Mangá Black Clover Vol. 1",
             category: "Mangás",
@@ -261,14 +440,18 @@
         }
     ];
 
+    // 2. FUNÇÃO PARA ORGANIZAR E EXIBIR OS PRODUTOS
     function renderShop() {
         const area = document.getElementById('content-area');
+        
+        // Pega todas as categorias únicas
         const categories = [...new Set(products.map(p => p.category))];
+
         area.innerHTML = categories.map(cat => `
             <section class="category-section">
                 <div class="category-title">${cat}</div>
                 <div class="horizontal-scroll">
-                    ${products.filter(p => p.category === cat).map(p => `
+                    ${products.filter(p => p.category === cat).map((p, index) => `
                         <div class="product-card" onclick="openModal('${p.title}')">
                             <img src="${p.image}" alt="${p.title}">
                             <div class="product-info">
@@ -281,6 +464,7 @@
         `).join('');
     }
 
+    // 3. LÓGICA DO MODAL
     function openModal(title) {
         const p = products.find(item => item.title === title);
         document.getElementById('modalTitle').innerText = p.title;
@@ -294,8 +478,13 @@
         document.getElementById('productModal').style.display = 'none';
     }
 
+    // Fechar modal se clicar fora dele
     window.onclick = function(event) {
         if (event.target == document.getElementById('productModal')) closeModal();
     }
 
     renderShop();
+</script>
+
+</body>
+</html>
