@@ -37,9 +37,10 @@
             letter-spacing: 4px;
         }
 
+        /* Estrutura de Categorias */
         .category-section {
             margin: 40px 0;
-            padding: 0 5%;
+            padding-left: 5%;
         }
 
         .category-title {
@@ -51,23 +52,15 @@
             padding-left: 15px;
         }
 
-        /* Container para segurar as setas e a lista */
-        .scroll-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
         .horizontal-scroll {
             display: flex;
             overflow-x: auto;
             gap: 20px;
             padding: 20px 0;
-            scrollbar-width: none;
-            scroll-behavior: smooth;
+            scrollbar-width: none; /* Firefox */
         }
 
-        .horizontal-scroll::-webkit-scrollbar { display: none; }
+        .horizontal-scroll::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
         .product-card {
             min-width: 220px;
@@ -95,38 +88,7 @@
         .product-info { padding: 15px; text-align: center; }
         .product-name { font-weight: bold; font-size: 0.9rem; height: 40px; overflow: hidden; }
 
-        /* Botões de Navegação */
-        .nav-btn {
-            background: rgba(0, 0, 0, 0.7);
-            color: var(--gold);
-            border: 1px solid var(--gold);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            position: absolute;
-            z-index: 10;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s;
-            user-select: none;
-        }
-
-        .nav-btn:hover {
-            background: var(--gold);
-            color: var(--black);
-        }
-
-        .prev-btn { left: -20px; }
-        .next-btn { right: -20px; }
-
-        @media (max-width: 768px) {
-            .nav-btn { display: none; }
-        }
-
-        /* Modal */
+        /* Estilo do Modal (Janela de Detalhes) */
         .modal {
             display: none;
             position: fixed;
@@ -138,7 +100,7 @@
         }
 
         .modal-content {
-            background: #f1f1f1;
+            background: #f1f1f1; /* Cor clara estilo Amazon */
             color: #111;
             width: 90%;
             max-width: 800px;
@@ -176,9 +138,46 @@
             font-weight: bold;
             display: inline-block;
             border: 1px solid #fcd200;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         footer { text-align: center; padding: 50px; color: #666; font-size: 0.8rem; }
+		/* --- ADICIONE ISTO AQUI --- */
+.scroll-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nav-btn {
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    position: absolute;
+    z-index: 10;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+    user-select: none;
+}
+
+.nav-btn:hover {
+    background: var(--gold);
+    color: var(--black);
+}
+
+.prev-btn { left: -10px; }
+.next-btn { right: 20px; }
+
+@media (max-width: 768px) {
+    .nav-btn { display: none; }
+}
     </style>
 </head>
 <body>
@@ -188,12 +187,17 @@
     <p>A loja definitiva para Cavaleiros Mágicos</p>
 </header>
 
-<div id="content-area"></div>
+<div id="content-area">
+    <!-- As categorias e produtos serão gerados aqui pelo JS -->
+</div>
 
+<!-- Janela Modal -->
 <div id="productModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeModal()">&times;</span>
-        <div class="modal-left"><img id="modalImg" src="" alt=""></div>
+        <div class="modal-left">
+            <img id="modalImg" src="" alt="">
+        </div>
         <div class="modal-right">
             <div id="modalTitle" class="modal-title"></div>
             <div id="modalDesc" class="modal-desc"></div>
@@ -207,6 +211,8 @@
 </footer>
 
 <script>
+    // 1. SEU BANCO DE DADOS DE PRODUTOS
+    // Para criar categorias novas, basta mudar o texto em "category"
     const products = [
         {
             title: "Mangá Black Clover Vol. 1",
@@ -469,41 +475,40 @@
 		}
     ];
 
+    // 2. FUNÇÃO PARA ORGANIZAR E EXIBIR OS PRODUTOS
     function renderShop() {
         const area = document.getElementById('content-area');
+        
+        // Pega todas as categorias únicas
         const categories = [...new Set(products.map(p => p.category))];
 
         area.innerHTML = categories.map(cat => `
             <section class="category-section">
                 <div class="category-title">${cat}</div>
-                <div class="scroll-container">
-                    <button class="nav-btn prev-btn" onclick="sideScroll(this, 'left')">&#8249;</button>
-                    <div class="horizontal-scroll">
-                        ${products.filter(p => p.category === cat).map(p => `
-                            <div class="product-card" onclick="openModal('${p.title}')">
-                                <img src="${p.image}" alt="${p.title}">
-                                <div class="product-info">
-                                    <div class="product-name">${p.title}</div>
-                                </div>
+                <div class="horizontal-scroll">
+                    ${products.filter(p => p.category === cat).map((p, index) => `
+                        <div class="product-card" onclick="openModal('${p.title}')">
+                            <img src="${p.image}" alt="${p.title}">
+                            <div class="product-info">
+                                <div class="product-name">${p.title}</div>
                             </div>
-                        `).join('')}
-                    </div>
-                    <button class="nav-btn next-btn" onclick="sideScroll(this, 'right')">&#8250;</button>
+                        </div>
+                    `).join('')}
                 </div>
             </section>
         `).join('');
     }
+function sideScroll(element, direction) {
+    const container = element.parentElement.querySelector('.horizontal-scroll');
+    const scrollAmount = 300; 
 
-    function sideScroll(element, direction) {
-        const container = element.parentElement.querySelector('.horizontal-scroll');
-        const scrollAmount = 300;
-        if (direction === 'left') {
-            container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-        } else {
-            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
+    if (direction === 'left') {
+        container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    } else {
+        container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
-
+}
+    // 3. LÓGICA DO MODAL
     function openModal(title) {
         const p = products.find(item => item.title === title);
         document.getElementById('modalTitle').innerText = p.title;
@@ -517,11 +522,13 @@
         document.getElementById('productModal').style.display = 'none';
     }
 
+    // Fechar modal se clicar fora dele
     window.onclick = function(event) {
         if (event.target == document.getElementById('productModal')) closeModal();
     }
 
     renderShop();
 </script>
+
 </body>
 </html>
